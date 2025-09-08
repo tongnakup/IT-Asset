@@ -43,13 +43,10 @@
         }
 
         /* ▼▼▼ เพิ่ม CSS นี้เข้าไป ▼▼▼ */
-        .qr-code img {
-            border: 1px solid #ccc;
-            /* เพิ่มกรอบสีเทาอ่อน */
+        .qr-code svg {
+            border: 1px solid #000000;
             padding: 5px;
-            /* เพิ่มระยะห่างภายในกรอบ */
             background-color: white;
-            /* พื้นหลังสีขาว */
         }
     </style>
 </head>
