@@ -110,7 +110,7 @@ class ItAssetController extends Controller
     {
         $query = $request->input('query', '');
         if (strlen($query) < 1) return response()->json([]);
-        
+
         $employees = Employee::where('employee_id', 'like', '%' . $query . '%')
             ->orWhere('first_name', 'like', '%' . $query . '%')
             ->orWhere('last_name', 'like', '%' . $query . '%')
@@ -118,7 +118,7 @@ class ItAssetController extends Controller
 
         return response()->json($employees);
     }
-    
+
     /**
      * Store a newly created resource in storage.
      * This is now handled by the CreateAssetForm Livewire component.
@@ -148,7 +148,7 @@ class ItAssetController extends Controller
         }
 
         $itAsset->update($validatedData);
-        
+
         return response()->json(['success' => true, 'message' => 'Asset updated successfully.']);
     }
 
@@ -227,7 +227,7 @@ class ItAssetController extends Controller
             ], 404);
         }
     }
-    
+
     private function getValidationRules(?ItAsset $itAsset = null): array
     {
         $assetNumberRule = Rule::unique('assets', 'asset_number');

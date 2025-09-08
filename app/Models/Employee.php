@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,7 +22,7 @@ class Employee extends Model
         'last_name',
         'position',
         'department',
-        'location', 
+        'location',
         'phone_number',
         'start_date',
     ];
@@ -32,5 +33,12 @@ class Employee extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => $this->first_name . ' ' . $this->last_name,
+        );
     }
 }

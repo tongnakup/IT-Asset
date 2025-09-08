@@ -31,4 +31,9 @@ class Location extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function itAssets()
+    {
+        return $this->hasMany(ItAsset::class);
+    }
 }
