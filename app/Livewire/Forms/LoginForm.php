@@ -13,10 +13,10 @@ use Livewire\Form;
 class LoginForm extends Form
 {
     #[Validate('required|string|email')]
-    public string $email = '';
+    public string $email = 'admin@test.com';
 
     #[Validate('required|string')]
-    public string $password = '';
+    public string $password = 'test1234';
 
     #[Validate('boolean')]
     public bool $remember = false;
@@ -67,6 +67,6 @@ class LoginForm extends Form
      */
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->email).'|'.request()->ip());
+        return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
     }
 }

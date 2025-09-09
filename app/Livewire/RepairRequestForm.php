@@ -9,12 +9,13 @@ use Livewire\WithFileUploads;
 use App\Models\AssetCategory;
 use App\Models\Location;
 use App\Models\AssetType;
+use App\Models\RepairRequest;
 
 class RepairRequestForm extends Component
 {
     use WithFileUploads;
 
-    // --- Properties ทั้งหมดเหมือนเดิม ---
+    // --- Properties ---
     public $requester_name, $requester_email;
     public $asset_number = '', $searchResults, $selectedAsset, $assetFound = false, $lookupMessage, $lookupMessageType;
     public $asset_category_id, $asset_type_id, $location_id, $problem_description, $image;
@@ -22,17 +23,15 @@ class RepairRequestForm extends Component
 
     public function mount()
     {
-        $this->requester_name = Auth::user()->name;
-        $this->requester_email = Auth::user()->email;
+        $user = Auth::user();
+        $this->requester_name = $user->name;
+        $this->requester_email = $user->email;
         $this->searchResults = collect();
         $this->types = collect();
-
-        // ▼▼▼ [แก้ไข] จะโหลดข้อมูลทั้งหมดโดยไม่มีการกรอง ▼▼▼
         $this->categories = AssetCategory::orderBy('name')->get();
         $this->locations = Location::orderBy('name')->get();
     }
 
-    // --- ฟังก์ชัน updatedAssetNumber เหมือนเดิม ---
     public function updatedAssetNumber($value)
     {
         if (strlen($value) >= 2) {
@@ -44,7 +43,6 @@ class RepairRequestForm extends Component
         $this->lookupMessage = null;
     }
 
-    // --- ฟังก์ชัน selectAsset เหมือนเดิม ---
     public function selectAsset($assetId)
     {
         $asset = ItAsset::find($assetId);
@@ -58,11 +56,11 @@ class RepairRequestForm extends Component
                 $this->types = AssetType::where('asset_category_id', $this->asset_category_id)->get();
             }
             $this->assetFound = true;
-            $this->lookupMessage = 'Asset found and details have been filled in.';
+            $this->lookupMessage = 'พบข้อมูลทรัพย์สิน และได้ดึงข้อมูลมาใส่ในฟอร์มเรียบร้อยแล้ว';
             $this->lookupMessageType = 'success';
         } else {
             $this->assetFound = false;
-            $this->lookupMessage = 'Asset not found.';
+            $this->lookupMessage = 'ไม่พบข้อมูลทรัพย์สิน';
             $this->lookupMessageType = 'error';
         }
         $this->searchResults = collect();
@@ -71,26 +69,46 @@ class RepairRequestForm extends Component
     public function updatedAssetCategoryId($value)
     {
         if ($value) {
-            // ▼▼▼ [แก้ไข] จะโหลด Type ทั้งหมดใน Category นั้นๆ โดยไม่มีการกรอง ▼▼▼
-            $this->types = AssetType::where('asset_category_id', $value)
-                ->orderBy('name')->get();
+            $this->types = AssetType::where('asset_category_id', $value)->orderBy('name')->get();
         } else {
             $this->types = collect();
         }
         $this->asset_type_id = null;
     }
 
-    // --- ฟังก์ชัน save และ render เหมือนเดิม ---
+    // ในไฟล์ app/Livewire/RepairRequestForm.php
     public function save()
     {
-        $this->validate([
+        $validatedData = $this->validate([
             'problem_description' => 'required|min:10',
-            'asset_type_id' => 'required',
-            'location_id' => 'required',
-            'image' => 'nullable|image|max:1024',
+            'asset_type_id' => 'required|exists:asset_types,id',
+            'location_id' => 'required|exists:locations,id',
+            'image' => 'nullable|image|max:2048',
         ]);
-        session()->flash('success', 'Repair request submitted successfully!');
-        return redirect()->to('/dashboard');
+
+        $imagePath = $this->image ? $this->image->store('repair-requests', 'public') : null;
+
+        // ▼▼▼ [แก้ไข] สร้าง Array ข้อมูลสำหรับบันทึกให้เหลือเฉพาะ ID ▼▼▼
+        $dataToSave = [
+            'user_id' => Auth::id(),
+            'problem_description' => $this->problem_description,
+            'image_path' => $imagePath,
+            'status' => 'pending',
+            'asset_type_id' => $this->asset_type_id, // ใช้ ID โดยตรง
+            'location_id' => $this->location_id,   // ใช้ ID โดยตรง
+        ];
+
+        if ($this->assetFound && $this->selectedAsset) {
+            // 'it_asset_id' ควรจะอยู่ใน $fillable ของ Model ด้วย
+            $dataToSave['it_asset_id'] = $this->selectedAsset->id;
+            $dataToSave['asset_number'] = $this->selectedAsset->asset_number;
+        }
+
+        // บันทึกข้อมูลลงฐานข้อมูล
+        RepairRequest::create($dataToSave);
+
+        session()->flash('success', 'ส่งใบแจ้งซ่อมเรียบร้อยแล้ว!');
+        return redirect()->route('repair_requests.my');
     }
 
     public function render()

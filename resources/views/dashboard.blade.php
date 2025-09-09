@@ -181,8 +181,9 @@
                                                     <div>
                                                         <p class="font-semibold text-gray-800">
                                                             {{ $asset->asset_number }}</p>
-                                                        <p class="text-sm text-gray-600">{{ $asset->type }} -
-                                                            {{ $asset->brand }}</p>
+                                                        <p class="text-sm text-gray-600">
+                                                            {{ $asset->assetType?->name ?? 'N/A' }} -
+                                                            {{ $asset->brand?->name ?? 'N/A' }}</p>
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center space-x-4">
