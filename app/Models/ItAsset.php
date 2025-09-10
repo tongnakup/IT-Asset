@@ -10,51 +10,61 @@ class ItAsset extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'assets'; 
-    
+    // ส่วนนี้ถูกต้องแล้วครับ
+    protected $table = 'assets';
+
     protected $fillable = [
         'asset_number',
-        'serial_number',
+        'employee_id',
         'asset_category_id',
         'asset_type_id',
         'brand_id',
-        'model',
-        'start_date', 
-        'end_date',   
-        'location_id',
-        'employee_id',
         'status_id',
-        'notes',
+        'location_id',
+        'specifications',
         'image_path',
+        'start_date',
+        'end_date',
     ];
 
-    protected $casts = [
-        'start_date' => 'date', // <-- [แก้ไข] เปลี่ยนกลับเป็น start_date
-        'end_date' => 'date',   // <-- [แก้ไข] เปลี่ยนกลับเป็น end_date
-    ];
-
-    public function assetType()
+    public function employee()
     {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function assetCategory()
+    {
+        return $this->belongsTo(AssetCategory::class);
+    }
+
+    // [แก้ไข] เปลี่ยนชื่อฟังก์ชันจาก assetType เป็น type
+    // เพื่อให้สอดคล้องกับการเรียกใช้ในส่วนอื่นๆ
+    public function type()
+    {
+        // ต้องมั่นใจว่ามี Model 'AssetType' อยู่จริง
         return $this->belongsTo(AssetType::class, 'asset_type_id');
     }
 
     public function brand()
     {
-        return $this->belongsTo(Brand::class, 'brand_id');
-    }
-    
-    public function location()
-    {
-        return $this->belongsTo(Location::class, 'location_id');
+        return $this->belongsTo(Brand::class);
     }
 
+    // [แก้ไข] เปลี่ยนชื่อฟังก์ชันจาก assetStatus เป็น status
+    // เพื่อให้แก้ปัญหา Error `undefined relationship [status]`
     public function status()
     {
+        // ต้องมั่นใจว่ามี Model 'AssetStatus' อยู่จริง
         return $this->belongsTo(AssetStatus::class, 'status_id');
     }
 
-    public function employee()
+    public function location()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->belongsTo(Location::class);
+    }
+
+    public function repairRequests()
+    {
+        return $this->hasMany(RepairRequest::class, 'asset_number', 'asset_number');
     }
 }

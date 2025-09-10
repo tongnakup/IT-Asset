@@ -25,8 +25,8 @@ class ItAssetController extends Controller
      */
     public function index(Request $request)
     {
-        // Eager load all necessary relationships for the table view
-        $query = ItAsset::with(['employee', 'assetType', 'brand', 'status', 'location']);
+        // ใช้ชื่อ relationship ที่ถูกต้อง: 'type' และ 'status'
+        $query = ItAsset::with(['employee.user', 'type', 'brand', 'status', 'location']);
 
         // --- Search Logic ---
         $query->when($request->filled('search'), function ($q) use ($request) {
@@ -34,23 +34,24 @@ class ItAssetController extends Controller
             $q->where(function ($subQ) use ($search) {
                 $subQ->where('asset_number', 'like', "%{$search}%")
                     ->orWhereHas('brand', fn($brandQuery) => $brandQuery->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('employee.user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('employee', function ($employeeQuery) use ($search) {
-                        $employeeQuery->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%")
-                            ->orWhere('employee_id', 'like', "%{$search}%");
+                        $employeeQuery->where('employee_id', 'like', "%{$search}%");
                     });
             });
         });
 
         // --- Filter Logic ---
+        // ใช้ชื่อ relationship ที่ถูกต้อง: 'type'
         $query->when($request->filled('type'), function ($q) use ($request) {
-            // Assuming 'type' filter sends the name of the asset type
-            $q->whereHas('assetType', fn($typeQuery) => $typeQuery->where('name', $request->type));
+            $q->whereHas('type', fn($typeQuery) => $typeQuery->where('name', 'like', "%{$request->type}%"));
         });
 
+        // ใช้ชื่อ relationship ที่ถูกต้อง: 'status'
         $query->when($request->filled('status'), function ($q) use ($request) {
-            // Assuming 'status' filter sends the name of the asset status
-            $q->whereHas('status', fn($statusQuery) => $statusQuery->where('name', $request->status));
+            $q->whereHas('status', fn($statusQuery) => $statusQuery->where('name', 'like', "%{$request->status}%"));
         });
 
         $assets = $query->latest()->paginate(10)->appends($request->query());
@@ -67,7 +68,6 @@ class ItAssetController extends Controller
      */
     public function create()
     {
-        // This now just returns the view, as the form is a Livewire component
         return view('it_assets.create');
     }
 
@@ -77,8 +77,6 @@ class ItAssetController extends Controller
     public function getEditData(ItAsset $itAsset)
     {
         $itAsset->load('employee');
-
-        // Fetch full collections for dropdowns, not just plucked names
         $locations = Cache::remember('locations_collection', 60, fn() => Location::orderBy('name')->get());
         $brands = Cache::remember('brands_collection', 60, fn() => Brand::orderBy('name')->get());
         $statuses = Cache::remember('asset_statuses_collection', 60, fn() => AssetStatus::orderBy('name')->get());
@@ -91,7 +89,7 @@ class ItAssetController extends Controller
             'types' => AssetType::where('asset_category_id', $itAsset->asset_category_id)->orderBy('name')->get(),
             'statuses' => $statuses,
             'locations' => $locations,
-            'brands' => $brands, // All brands are sent, JS will filter
+            'brands' => $brands,
         ]);
     }
 
@@ -121,14 +119,9 @@ class ItAssetController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * This is now handled by the CreateAssetForm Livewire component.
-     * This function can be kept for non-Livewire routes or removed if not needed.
      */
     public function store(Request $request)
     {
-        // This logic is now primarily in App\Livewire\CreateAssetForm.php
-        // Keeping it here requires syncing validation and logic.
-        // It's better to handle form submission entirely within the Livewire component.
         return redirect()->route('it_assets.index')->with('error', 'Please use the new asset form.');
     }
 
@@ -157,7 +150,8 @@ class ItAssetController extends Controller
      */
     public function show(ItAsset $itAsset)
     {
-        $itAsset->load(['employee', 'assetType.assetCategory', 'brand', 'status', 'location']);
+        // ใช้ชื่อ relationship ที่ถูกต้อง: 'type.assetCategory'
+        $itAsset->load(['employee', 'type.assetCategory', 'brand', 'status', 'location']);
         $repairHistory = RepairRequest::where('asset_number', $itAsset->asset_number)->with('user')->latest()->get();
         $updateHistory = ActivityLog::where('description', 'like', '%' . $itAsset->asset_number . '%')->with('user')->latest()->get();
         return view('it_assets.show', compact('itAsset', 'repairHistory', 'updateHistory'));
@@ -170,7 +164,6 @@ class ItAssetController extends Controller
 
     public function edit(ItAsset $itAsset)
     {
-        // This is likely unused now due to the modal approach.
         return redirect()->route('it_assets.index');
     }
 
@@ -207,15 +200,17 @@ class ItAssetController extends Controller
 
     public function lookupByAssetNumber($assetNumber)
     {
+        // ใช้ชื่อ relationship ที่ถูกต้อง: 'type.assetCategory'
         $asset = ItAsset::where('asset_number', $assetNumber)
-            ->with(['assetType.assetCategory', 'location'])
+            ->with(['type.assetCategory', 'location'])
             ->first();
 
         if ($asset) {
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'asset_category_id' => $asset->assetType->asset_category_id,
+                    // ใช้ชื่อ relationship ที่ถูกต้อง: 'type'
+                    'asset_category_id' => $asset->type->asset_category_id,
                     'asset_type_id'     => $asset->asset_type_id,
                     'location_id'       => $asset->location_id,
                 ]

@@ -6,7 +6,8 @@ use Livewire\Component;
 use App\Models\AssetCategory;
 use App\Models\AssetType;
 use App\Models\Brand;
-use App\Models\ItAsset; // เพิ่ม Model ItAsset เข้ามา
+use App\Models\ItAsset;
+use Livewire\Attributes\On; // เพิ่ม On attribute สำหรับ Event Listener
 
 class AssetForm extends Component
 {
@@ -18,58 +19,69 @@ class AssetForm extends Component
     // Properties สำหรับเก็บค่าที่เลือก
     public $selectedCategory = null;
     public $selectedType = null;
-    public $selectedBrand = null; // ใช้ชื่อนี้เพื่อให้ตรงกับ Blade
+    public $selectedBrand = null;
 
     // Property สำหรับเก็บข้อมูล Asset
-    public ItAsset $asset;
+    public ?ItAsset $asset = null; // ทำให้เป็น nullable เพราะตอนแรกอาจจะยังไม่มี
 
-    // เราจะใช้ $assetId ที่รับเข้ามาเพื่อค้นหาข้อมูล
-    public function mount($assetId)
+    // Property สำหรับควบคุมการแสดง Modal
+    public $showModal = false;
+
+    // ทำให้ assetId เป็น nullable เพราะเราจะรับค่าผ่าน event แทน
+    public function mount($assetId = null)
     {
-        // โหลดข้อมูล Asset ที่จะแก้ไข พร้อมข้อมูลที่เกี่ยวข้อง
-        $this->asset = ItAsset::with('assetType.assetCategory')->findOrFail($assetId);
+        // โหลด Category มาเตรียมไว้เสมอ
+        $thisकर्मियों = AssetCategory::orderBy('name')->get();
 
-        // 1. โหลด Category ทั้งหมดมาเตรียมไว้
-        $this->categories = AssetCategory::orderBy('name')->get();
+        if ($assetId) {
+            $this->setAsset($assetId);
+        }
+    }
 
-        // 2. ตั้งค่า Dropdown เริ่มต้นจากข้อมูลของ Asset
-        if ($this->asset->assetType) {
-            $this->selectedCategory = $this->asset->assetType->asset_category_id;
+    // สร้าง Listener เพื่อรอรับสัญญาณจากปุ่มกด
+    #[On('edit-asset')]
+    public function editAsset($assetId)
+    {
+        $this->setAsset($assetId);
+        $this->showModal = true;
+    }
+
+    // ฟังก์ชันสำหรับตั้งค่าข้อมูล Asset
+    public function setAsset($assetId)
+    {
+        $this->asset = ItAsset::with('type.assetCategory', 'brand')->findOrFail($assetId);
+
+        if ($this->asset->type) {
+            $this->selectedCategory = $this->asset->type->asset_category_id;
             $this->selectedType = $this->asset->asset_type_id;
             $this->selectedBrand = $this->asset->brand_id;
 
-            // 3. โหลดรายการ Types และ Brands ที่สอดคล้องกับข้อมูลเริ่มต้น
             $this->types = AssetType::where('asset_category_id', $this->selectedCategory)->get();
-            $this->brands = AssetType::find($this->selectedType)->brands;
+            if ($this->selectedType) {
+                $type = AssetType::find($this->selectedType);
+                $this->brands = $type ? $type->brands : collect();
+            }
         }
+    }
+
+    // ฟังก์ชันสำหรับปิด Modal
+    public function closeModal()
+    {
+        $this->showModal = false;
     }
 
     // ทำงานเมื่อ User เลือก Category
     public function updatedSelectedCategory($categoryId)
     {
-        if (!is_null($categoryId) && $categoryId !== '') {
-            $this->types = AssetType::where('asset_category_id', $categoryId)->orderBy('name')->get();
-        } else {
-            $this->types = collect();
-        }
-        // รีเซ็ตค่า Type และ Brand ที่เลือกไว้
+        $this->types = $categoryId ? AssetType::where('asset_category_id', $categoryId)->orderBy('name')->get() : collect();
         $this->reset(['selectedType', 'selectedBrand']);
         $this->brands = collect();
     }
 
-    // ---- นี่คือฟังก์ชันที่ขาดไป เรายกมาจาก CreateAssetForm ----
     // ทำงานเมื่อ User เลือก Type
     public function updatedSelectedType($typeId)
     {
-        if (!is_null($typeId) && $typeId !== '') {
-            $type = AssetType::find($typeId);
-            if ($type) {
-                $this->brands = $type->brands()->orderBy('name')->get();
-            }
-        } else {
-            $this->brands = collect();
-        }
-        // รีเซ็ตเฉพาะ Brand ที่เลือกไว้
+        $this->brands = $typeId ? AssetType::find($typeId)->brands()->orderBy('name')->get() : collect();
         $this->reset('selectedBrand');
     }
 
