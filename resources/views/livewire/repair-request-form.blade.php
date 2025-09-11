@@ -1,8 +1,5 @@
 <form wire:submit.prevent="save">
-    @csrf
     <div class="space-y-6">
-
-        {{-- Asset Number Search and Dropdowns --}}
         <div class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
                 <div class="relative">
@@ -22,8 +19,8 @@
                                             <li class="px-4 py-2 cursor-pointer hover:bg-gray-100"
                                                 wire:click.prevent="selectAsset({{ $result->id }})">
                                                 <div class="font-semibold">{{ $result->asset_number }}</div>
-                                                <div class="text-xs text-gray-500">{{ $result->assetType->name ?? '' }}
-                                                    - {{ $result->brand->name ?? '' }}</div>
+                                                <div class="text-xs text-gray-500">{{ $result->type->name ?? '' }} -
+                                                    {{ $result->brand->name ?? '' }}</div>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -40,24 +37,21 @@
                             <span>Scan QR</span>
                         </button>
                     </div>
-                    @isset($lookupMessage)
-                        @if ($lookupMessage)
-                            <div
-                                class="mt-2 text-sm p-2 rounded-md {{ $lookupMessageType === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700' }}">
-                                {{ $lookupMessage }}
-                            </div>
-                        @endif
-                    @endisset
+                    @if ($lookupMessage)
+                        <div
+                            class="mt-2 text-sm p-2 rounded-md {{ $lookupMessageType === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700' }}">
+                            {{ $lookupMessage }}
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
                     <label for="category" class="block text-sm font-medium text-gray-700">หมวดหมู่ <span
                             class="text-red-600">*</span></label>
-                    {{-- ▼▼▼ [แก้ไขจุดที่ 1] เพิ่ม isset() ▼▼▼ --}}
                     <select id="category" name="asset_category_id" wire:model.live="asset_category_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        @if (isset($assetFound) && $assetFound) disabled @endif>
+                        @if ($assetFound) disabled @endif>
                         <option value="">-- กรุณาเลือก --</option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -67,10 +61,9 @@
                 <div>
                     <label for="asset_type" class="block text-sm font-medium text-gray-700">ประเภทอุปกรณ์ <span
                             class="text-red-600">*</span></label>
-                    {{-- ▼▼▼ [แก้ไขจุดที่ 2] เพิ่ม isset() ▼▼▼ --}}
                     <select id="asset_type" name="asset_type_id" wire:model="asset_type_id"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        @if ((isset($assetFound) && $assetFound) || $types->isEmpty()) disabled @endif>
+                        @if ($types->isEmpty()) disabled @endif>
                         @if ($types->isEmpty())
                             <option value="">-- กรุณาเลือกหมวดหมู่ก่อน --</option>
                         @else
@@ -85,10 +78,9 @@
             <div>
                 <label for="location" class="block text-sm font-medium text-gray-700">Location <span
                         class="text-red-600">*</span></label>
-                {{-- ▼▼▼ [แก้ไขจุดที่ 3] เพิ่ม isset() ▼▼▼ --}}
                 <select id="location" name="location_id" wire:model="location_id"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                    @if (isset($assetFound) && $assetFound) disabled @endif>
+                    @if ($assetFound) disabled @endif>
                     <option value="">-- กรุณาเลือกสถานที่ --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}">{{ $location->name }}</option>
@@ -97,7 +89,6 @@
             </div>
         </div>
 
-        {{-- Problem Description and Image Upload --}}
         <div>
             <label for="problem_description" class="block text-sm font-medium text-gray-700">กรุณาอธิบายปัญหา <span
                     class="text-red-600">*</span></label>
@@ -110,13 +101,12 @@
         <div>
             <label for="image" class="block text-sm font-medium text-gray-700">แนบรูปภาพปัญหา (ถ้ามี)</label>
             <input type="file" name="image" id="image" wire:model="image"
-                class="mt-1 block w-full text-sm ...">
+                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
             @error('image')
                 <span class="text-red-500 text-xs">{{ $message }}</span>
             @enderror
         </div>
 
-        {{-- Buttons --}}
         <div class="mt-6 flex justify-end space-x-4">
             <a href="{{ route('dashboard') }}"
                 class="px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-50">Cancel</a>
