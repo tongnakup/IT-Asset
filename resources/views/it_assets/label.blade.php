@@ -42,7 +42,6 @@
             text-align: right;
         }
 
-        /* ▼▼▼ เพิ่ม CSS นี้เข้าไป ▼▼▼ */
         .qr-code svg {
             border: 1px solid #000000;
             padding: 5px;
@@ -57,14 +56,22 @@
         <div class="info">
             <h3>ANJI-NYK</h3>
             <p><strong>Asset No:</strong> {{ $itAsset->asset_number }}</p>
-            <p><strong>Type:</strong> {{ $itAsset->assetType?->name ?? 'N/A' }}</p>
-            <p><strong>User:</strong> {{ $itAsset->employee?->first_name ?? 'N/A' }}</p>
+
+            {{-- ▼▼▼ [แก้ไข] เปลี่ยน assetType เป็น type ▼▼▼ --}}
+            <p><strong>Type:</strong> {{ $itAsset->type?->name ?? 'N/A' }}</p>
+
+            {{-- ▼▼▼ [ปรับปรุง] แสดงชื่อเต็มของ User ▼▼▼ --}}
+            <p><strong>User:</strong>
+                {{ $itAsset->employee ? $itAsset->employee->first_name . ' ' . $itAsset->employee->last_name : 'N/A' }}
+            </p>
+
             <p><strong>Location:</strong> {{ $itAsset->location?->name ?? 'N/A' }}</p>
+
             <p><strong>Start:</strong>
-                {{ $itAsset->purchase_date ? \Carbon\Carbon::parse($itAsset->purchase_date)->format('d/m/Y') : 'N/A' }}
+                {{ $itAsset->start_date ? \Carbon\Carbon::parse($itAsset->start_date)->format('d/m/Y') : 'N/A' }}
             </p>
             <p><strong>End:</strong>
-                {{ $itAsset->warranty_end_date ? \Carbon\Carbon::parse($itAsset->warranty_end_date)->format('d/m/Y') : 'N/A' }}
+                {{ $itAsset->end_date ? \Carbon\Carbon::parse($itAsset->end_date)->format('d/m/Y') : 'N/A' }}
             </p>
         </div>
         <div class="qr-code">

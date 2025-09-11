@@ -159,6 +159,7 @@ class ItAssetController extends Controller
 
     public function label(ItAsset $itAsset)
     {
+        $itAsset->load(['type', 'employee', 'location']);
         return view('it_assets.label', compact('itAsset'));
     }
 
