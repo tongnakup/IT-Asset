@@ -15,24 +15,44 @@
                                 <tr>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Asset Number</th>
+                                        Asset Number
+                                    </th>
+
+                                    {{-- ▼▼▼ [เพิ่ม] ส่วนหัวตารางสำหรับ Type ▼▼▼ --}}
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Problem</th>
+                                        Type
+                                    </th>
+
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
+                                        Problem
+                                    </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Date Submitted</th>
+                                        Status
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date Submitted
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($requests as $request)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $request->asset_number ?? 'N/A' }}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {{ $request->asset_number ?? 'N/A' }}
                                         </td>
-                                        <td class="px-6 py-4">{{ Str::limit($request->problem_description, 50) }}</td>
+
+                                        {{-- ▼▼▼ [เพิ่ม] ส่วนแสดงข้อมูลของ Type ▼▼▼ --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {{ $request->asset->type->name ?? 'N/A' }}
+                                        </td>
+
+                                        <td class="px-6 py-4">
+                                            {{ Str::limit($request->problem_description, 50) }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if ($request->status == 'Resolved')
                                                 <span
@@ -46,12 +66,15 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            {{ $request->created_at->format('Y-m-d') }}</td>
+                                            {{ $request->created_at->format('Y-m-d') }}
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">You have not
-                                            submitted any repair requests.</td>
+                                        {{-- [แก้ไข] เพิ่ม colspan เป็น 5 --}}
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                            You have not submitted any repair requests.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -62,14 +85,20 @@
                         {{ $requests->links() }}
                     </div>
 
-                    {{-- ===== เพิ่มปุ่มไว้ที่ด้านล่างขวา ===== --}}
-                    <div class="mt-6 flex justify-end">
+                    <div class="mt-6 flex justify-end space-x-4">
+
+                        {{-- ▼▼▼ [เพิ่ม] ปุ่ม Back to Dashboard ▼▼▼ --}}
+                        <a href="{{ route('dashboard') }}"
+                            class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            Back to Dashboard
+                        </a>
+
+                        {{-- ปุ่ม New Repair Request เดิม --}}
                         <a href="{{ route('repair_requests.create') }}"
                             class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                             + New Repair Request
                         </a>
                     </div>
-                    {{-- =================================== --}}
                 </div>
             </div>
         </div>

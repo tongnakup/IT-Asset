@@ -29,7 +29,11 @@ class RepairRequestController extends Controller
      */
     public function userIndex()
     {
-        $requests = RepairRequest::where('user_id', Auth::id())->latest()->paginate(10);
+        $requests = RepairRequest::with('asset.type')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->paginate(10);
+
         return view('repair_requests.user.index', compact('requests'));
     }
 

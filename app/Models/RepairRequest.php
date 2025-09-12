@@ -10,6 +10,7 @@ class RepairRequest extends Model
     use HasFactory;
 
     /**
+     * The attributes that are mass assignable.
      */
     protected $fillable = [
         'user_id',
@@ -31,12 +32,20 @@ class RepairRequest extends Model
     }
 
     /**
-     * ▼▼▼ [แก้ไข] ทำให้ความสัมพันธ์นี้ถูกต้องสมบูรณ์ ▼▼▼
      * Get the asset type associated with the repair request.
      */
     public function assetType()
     {
-
         return $this->belongsTo(AssetType::class, 'asset_type_id');
+    }
+
+    /**
+     * ▼▼▼ [เพิ่มฟังก์ชันนี้เข้าไป] ▼▼▼
+     * Get the IT asset associated with the repair request.
+     */
+    public function asset()
+    {
+        // เชื่อม RepairRequest กับ ItAsset โดยใช้คอลัมน์ 'asset_number'
+        return $this->belongsTo(ItAsset::class, 'asset_number', 'asset_number');
     }
 }
