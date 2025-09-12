@@ -248,17 +248,20 @@ class ItAssetController extends Controller
         ];
     }
 
-    private function generateNextAssetNumber(): string
-    {
-        $prefix = 'A';
-        $today = Carbon::now()->format('dmy');
-        $lastAssetToday = ItAsset::where('asset_number', 'like', $prefix . $today . '%')
-            ->orderBy('asset_number', 'desc')->first();
-        if (!$lastAssetToday) {
-            return $prefix . $today . '001';
-        }
-        $lastRunningNumber = (int)substr($lastAssetToday->asset_number, -3);
-        $newRunningNumber = $lastRunningNumber + 1;
-        return $prefix . $today . str_pad($newRunningNumber, 3, '0', STR_PAD_LEFT);
-    }
+    // private function generateNextAssetNumber(): string
+    // {
+    //     $prefix = 'A';
+    //     $today = Carbon::now()->format('dmy');
+    //     $lastAsset = ItAsset::orderBy('id', 'desc')->first();
+    //     $newRunningNumber = 1;
+
+    //     if ($lastAsset) {
+
+    //         if (strlen($lastAsset->asset_number) >= 9) {
+    //             $lastRunningNumber = (int)substr($lastAsset->asset_number, -3);
+    //             $newRunningNumber = $lastRunningNumber + 1;
+    //         }
+    //     }
+    //     return $prefix . $today . str_pad($newRunningNumber, 3, '0', STR_PAD_LEFT);
+    // }
 }

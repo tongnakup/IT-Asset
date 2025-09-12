@@ -128,7 +128,7 @@ class CreateAssetForm extends Component
         if ($this->image) {
             $validatedData['image_path'] = $this->image->store('assets', 'public');
         }
-        
+
         ItAsset::create($validatedData);
 
         return redirect()->route('it_assets.index')->with('success', 'เพิ่มข้อมูล Asset เรียบร้อยแล้ว');
@@ -138,13 +138,17 @@ class CreateAssetForm extends Component
     {
         $prefix = 'A';
         $today = Carbon::now()->format('dmy');
-        $lastAssetToday = ItAsset::where('asset_number', 'like', $prefix . $today . '%')
-            ->orderBy('asset_number', 'desc')->first();
-        if (!$lastAssetToday) {
-            return $prefix . $today . '001';
+        $lastAsset = ItAsset::orderBy('id', 'desc')->first();
+        $newRunningNumber = 1;
+
+        if ($lastAsset) {
+
+            if (strlen($lastAsset->asset_number) >= 9) {
+                $lastRunningNumber = (int)substr($lastAsset->asset_number, -3);
+                $newRunningNumber = $lastRunningNumber + 1;
+            }
         }
-        $lastRunningNumber = (int)substr($lastAssetToday->asset_number, -3);
-        $newRunningNumber = $lastRunningNumber + 1;
+
         return $prefix . $today . str_pad($newRunningNumber, 3, '0', STR_PAD_LEFT);
     }
 
