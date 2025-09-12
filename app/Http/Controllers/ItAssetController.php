@@ -136,7 +136,7 @@ class ItAssetController extends Controller
             if ($itAsset->image_path) {
                 Storage::disk('public')->delete($itAsset->image_path);
             }
-            $path = $request->file('image')->store('assets', 'public');
+            $path = $request->file('image')->store('assets', 'public_direct');
             $validatedData['image_path'] = $path;
         }
 

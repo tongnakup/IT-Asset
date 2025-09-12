@@ -88,7 +88,7 @@
                         <div class="mt-6 border-t border-gray-200 pt-6">
                             <h3 class="text-lg font-medium text-gray-900">Asset Image</h3>
                             <div class="mt-4">
-                                <img src="{{ Storage::url($itAsset->image_path) }}" alt="Asset Image"
+                                <img src="{{ asset('uploads/' . $itAsset->image_path) }}" alt="Asset Image"
                                     class="rounded-md max-h-96">
                             </div>
                         </div>
