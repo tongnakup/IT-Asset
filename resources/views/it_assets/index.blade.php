@@ -419,7 +419,7 @@
                             .then(response => response.json())
                             .then(data => {
                                 this.editFormData = data.asset;
-                                this.imagePreview = data.asset.image_path ? `/storage/${data.asset.image_path}` : '';
+                                this.imagePreview = data.asset.image_path ? `/uploads/${data.asset.image_path}` : '';
                                 if (data.asset.employee) {
                                     this.employeeSearchQuery = data.asset.employee.employee_id;
                                     this.editFormData.first_name = data.asset.employee.first_name;
