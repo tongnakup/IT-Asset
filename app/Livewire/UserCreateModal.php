@@ -30,7 +30,7 @@ class UserCreateModal extends Component
     {
         $this->resetInput();
         // [แก้ไข] ไม่ต้อง load 'department' แล้ว
-        $this->positions = Position::orderBy('name')->get(); 
+        $this->positions = Position::orderBy('name')->get();
         $this->departments = Department::orderBy('name')->get();
         $this->locations = Location::orderBy('name')->get();
         $this->showModal = true;
@@ -81,8 +81,8 @@ class UserCreateModal extends Component
             'start_date' => $this->start_date,
         ]);
 
-        $this->closeModal();
-        $this->dispatch('userCreated');
+        session()->flash('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว.');
+        return redirect()->route('users.index');
     }
 
     private function resetInput()
