@@ -22,11 +22,11 @@
 
                         <!-- Asset Type Selection -->
                         <div class="mb-6">
-                            <label for="asset_type_id" class="block text-sm font-medium text-gray-700">Select Asset Type to manage its brands:</label>
-                            <select id="asset_type_id" name="asset_type_id" 
-                                    x-model="selectedType" 
-                                    @change="$store.brandAssignment.updateCurrentBrands(selectedType)" 
-                                    class="mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm" required>
+                            <label for="asset_type_id" class="block text-sm font-medium text-gray-700">Select Asset Type
+                                to manage its brands:</label>
+                            <select id="asset_type_id" name="asset_type_id" x-model="selectedType"
+                                @change="$store.brandAssignment.updateCurrentBrands(selectedType)"
+                                class="mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm" required>
                                 <option value="">-- Please Select an Asset Type --</option>
                                 @foreach ($assetTypes as $type)
                                     <option value="{{ $type->id }}">{{ $type->name }}</option>
@@ -40,13 +40,9 @@
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                 @foreach ($brands as $brand)
                                     <label class="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-50">
-                                        <input 
-                                            type="checkbox" 
-                                            name="brands[]" 
-                                            value="{{ $brand->id }}"
+                                        <input type="checkbox" name="brands[]" value="{{ $brand->id }}"
                                             class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                            :checked="$store.brandAssignment.isChecked({{ $brand->id }})"
-                                        >
+                                            :checked="$store.brandAssignment.isChecked({{ $brand->id }})">
                                         <span>{{ $brand->name }}</span>
                                     </label>
                                 @endforeach
@@ -55,8 +51,11 @@
 
                         <!-- Action Buttons -->
                         <div x-show="selectedType" class="mt-8 flex justify-end space-x-4 pt-4 border-t">
-                            <a href="{{ route('settings.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">Cancel</a>
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">Save Assignments</button>
+                            <a href="{{ route('settings.index') }}"
+                                class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">Cancel</a>
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">Save
+                                Assignments</button>
                         </div>
                     </form>
                 </div>
@@ -65,34 +64,35 @@
     </div>
 
     @push('scripts')
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('brandAssignment', {
-                // This holds the initial mapping of type ID to an array of brand IDs.
-                typeBrandMap: @json($assetTypes->mapWithKeys(function ($type) {
-                    return [$type->id => $type->brands->pluck('id')];
-                })),
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('brandAssignment', {
+                    // This holds the initial mapping of type ID to an array of brand IDs.
+                    typeBrandMap: @json(
+                        $assetTypes->mapWithKeys(function ($type) {
+                            return [$type->id => $type->brands->pluck('id')];
+                        })),
 
-                // This will hold the currently selected brands for the active type.
-                currentBrands: [],
+                    // This will hold the currently selected brands for the active type.
+                    currentBrands: [],
 
-                // This is called when the dropdown changes.
-                updateCurrentBrands(typeId) {
-                    if (typeId && this.typeBrandMap[typeId]) {
-                        // We make a copy to avoid modifying the original map.
-                        this.currentBrands = [...this.typeBrandMap[typeId]];
-                    } else {
-                        this.currentBrands = [];
+                    // This is called when the dropdown changes.
+                    updateCurrentBrands(typeId) {
+                        if (typeId && this.typeBrandMap[typeId]) {
+                            // We make a copy to avoid modifying the original map.
+                            this.currentBrands = [...this.typeBrandMap[typeId]];
+                        } else {
+                            this.currentBrands = [];
+                        }
+                    },
+
+                    // This checks if a brand checkbox should be checked.
+                    isChecked(brandId) {
+                        // Alpine's reactivity will automatically update checkboxes when currentBrands changes.
+                        return this.currentBrands.includes(brandId);
                     }
-                },
-
-                // This checks if a brand checkbox should be checked.
-                isChecked(brandId) {
-                    // Alpine's reactivity will automatically update checkboxes when currentBrands changes.
-                    return this.currentBrands.includes(brandId);
-                }
+                });
             });
-        });
-    </script>
+        </script>
     @endpush
 </x-app-layout>

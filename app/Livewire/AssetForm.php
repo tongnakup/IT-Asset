@@ -7,60 +7,82 @@ use App\Models\AssetCategory;
 use App\Models\AssetType;
 use App\Models\Brand;
 use App\Models\ItAsset;
-use Livewire\Attributes\On; // เพิ่ม On attribute สำหรับ Event Listener
+use Livewire\Attributes\On;
 
 class AssetForm extends Component
 {
-    // Properties สำหรับ Dropdowns
+    // Properties for Dropdowns
     public $categories = [];
     public $types = [];
     public $brands = [];
 
-    // Properties สำหรับเก็บค่าที่เลือก
+    // Properties for keeping track of selections
     public $selectedCategory = null;
     public $selectedType = null;
     public $selectedBrand = null;
 
-    // Property สำหรับเก็บข้อมูล Asset
-    public ?ItAsset $asset = null; // ทำให้เป็น nullable เพราะตอนแรกอาจจะยังไม่มี
+    // Property for the asset data
+    public ?ItAsset $asset = null;
 
-    // Property สำหรับควบคุมการแสดง Modal
+    // Property for controlling the modal's visibility
     public $showModal = false;
 
-    // ทำให้ assetId เป็น nullable เพราะเราจะรับค่าผ่าน event แทน
+    // mount() runs only once, when the component is first created
     public function mount($assetId = null)
     {
-        // โหลด Category มาเตรียมไว้เสมอ
-        $thisकर्मियों = AssetCategory::orderBy('name')->get();
+        // Always pre-load all categories for the dropdown
+        $this->categories = AssetCategory::orderBy('name')->get();
 
         if ($assetId) {
-            $this->setAsset($assetId);
+            $this->setAssetData($assetId);
         }
     }
 
-    // สร้าง Listener เพื่อรอรับสัญญาณจากปุ่มกด
+    // Listener for the button click event
     #[On('edit-asset')]
     public function editAsset($assetId)
     {
-        $this->setAsset($assetId);
+        // ▼▼▼ [แก้ไข] ลบ setAsset() ของเก่าออก แล้วใช้ฟังก์ชันสำหรับดีบักนี้แทน ▼▼▼
+
+        // ขั้นตอนที่ 1: รีเซ็ตค่าเก่าทั้งหมดเพื่อความแน่นอน
+        $this->reset(['asset', 'selectedCategory', 'selectedType', 'selectedBrand', 'types', 'brands']);
+
+        // ขั้นตอนที่ 2: หา Asset และดูข้อมูลเบื้องต้น
+        $asset = ItAsset::find($assetId);
+        if (!$asset) {
+            dd('หา Asset ไม่เจอด้วย ID:', $assetId);
+        }
+
+        // ขั้นตอนที่ 3: โหลด Relationship ของ Type และ Brands ที่ผูกกับ Type นั้นๆ
+        $asset->load('type.brands');
+
+        // ขั้นตอนที่ 4: เตรียมข้อมูลสำหรับแสดงผล
+        $this->asset = $asset;
+        $this->selectedBrand = $asset->brand_id;
+
+        // ดึงรายการ Brands จากข้อมูลที่โหลดมาแล้ว
+        $brandsForDropdown = $asset->type?->brands()->orderBy('name')->get() ?? collect();
+
+        // ขั้นตอนที่ 5: แสดงผลข้อมูลทั้งหมดก่อนจะไปที่ View
+        dd([
+            'Asset ที่โหลดได้ (พร้อม Type และ Brands ที่ผูกกับ Type)' => $this->asset->toArray(),
+            'Brands ที่จะนำไปสร้าง Dropdown' => $brandsForDropdown->pluck('name', 'id')->toArray(),
+            'Brand ID ที่ควรจะถูกเลือก' => $this->selectedBrand,
+        ]);
+
         $this->showModal = true;
     }
 
-    // ฟังก์ชันสำหรับตั้งค่าข้อมูล Asset
-    public function setAsset($assetId)
+    // ฟังก์ชันสำหรับตั้งค่าข้อมูล Asset (ฟังก์ชันนี้จะไม่ได้ถูกใช้ชั่วคราว)
+    public function setAssetData($assetId)
     {
-        $this->asset = ItAsset::with('type.assetCategory', 'brand')->findOrFail($assetId);
-
+        $this->asset = ItAsset::with('type.brands', 'brand')->findOrFail($assetId);
         if ($this->asset->type) {
             $this->selectedCategory = $this->asset->type->asset_category_id;
             $this->selectedType = $this->asset->asset_type_id;
             $this->selectedBrand = $this->asset->brand_id;
-
-            $this->types = AssetType::where('asset_category_id', $this->selectedCategory)->get();
-            if ($this->selectedType) {
-                $type = AssetType::find($this->selectedType);
-                $this->brands = $type ? $type->brands : collect();
-            }
+            $this->types = AssetType::where('asset_category_id', $this->selectedCategory)->orderBy('name')->get();
+            $this->brands = $this->asset->type->brands()->orderBy('name')->get();
         }
     }
 
@@ -70,7 +92,7 @@ class AssetForm extends Component
         $this->showModal = false;
     }
 
-    // ทำงานเมื่อ User เลือก Category
+    // Runs when the user manually changes the Category
     public function updatedSelectedCategory($categoryId)
     {
         $this->types = $categoryId ? AssetType::where('asset_category_id', $categoryId)->orderBy('name')->get() : collect();
@@ -78,10 +100,11 @@ class AssetForm extends Component
         $this->brands = collect();
     }
 
-    // ทำงานเมื่อ User เลือก Type
+    // Runs when the user manually changes the Type
     public function updatedSelectedType($typeId)
     {
-        $this->brands = $typeId ? AssetType::find($typeId)->brands()->orderBy('name')->get() : collect();
+        $type = AssetType::find($typeId);
+        $this->brands = $type ? $type->brands()->orderBy('name')->get() : collect();
         $this->reset('selectedBrand');
     }
 

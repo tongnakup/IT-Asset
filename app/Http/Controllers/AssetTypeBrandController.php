@@ -17,7 +17,7 @@ class AssetTypeBrandController extends Controller
     {
         // ดึงข้อมูล Asset Types ทั้งหมด พร้อมกับ Brands ที่ผูกอยู่แล้ว
         $assetTypes = AssetType::with('brands')->orderBy('name')->get();
-        
+
         // ดึงข้อมูล Brands ทั้งหมดเพื่อใช้สร้าง Checkbox
         $brands = Brand::orderBy('name')->get();
 
