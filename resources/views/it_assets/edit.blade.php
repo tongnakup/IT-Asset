@@ -70,8 +70,9 @@
                                 @if ($itAsset->image_path)
                                     <div class="mt-4">
                                         <p class="text-sm font-medium text-gray-700">Current Image:</p>
-                                        <img src="{{ Storage::url($itAsset->image_path) }}" alt="Current Asset Image"
-                                            class="mt-2 rounded-md max-h-48">
+                                        {{-- แก้ไขบรรทัดนี้ --}}
+                                        <img src="{{ asset('uploads/' . $itAsset->image_path) }}"
+                                            alt="Current Asset Image" class="mt-2 rounded-md max-h-48">
                                     </div>
                                 @endif
                             </div>
