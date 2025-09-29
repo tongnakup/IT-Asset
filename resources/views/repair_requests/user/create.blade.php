@@ -9,10 +9,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    
+
                     {{-- เรียกใช้ Livewire Component ที่รวมทุกอย่างไว้แล้ว --}}
-                    <livewire:repair-request-form />
-                    
+                    <livewire:repair-form />
+
                     {{-- ส่วนของ QR Reader ยังคงอยู่ที่นี่ เพราะต้องใช้ JavaScript --}}
                     <div id="qr-reader" class="w-full md:w-1/2 border rounded-md mt-4" style="display: none;"></div>
 
@@ -40,9 +40,11 @@
                         }).catch(err => console.log('Failed to stop camera.'));
                     }
                 };
-                
+
                 const onScanSuccess = (decodedText, decodedResult) => {
-                    Livewire.dispatch('assetScanned', { assetNumber: decodedText });
+                    Livewire.dispatch('assetScanned', {
+                        assetNumber: decodedText
+                    });
                     stopScanner();
                     alert(`สแกนสำเร็จ: ${decodedText}`);
                 };
@@ -54,9 +56,19 @@
                     }
                     qrReaderDiv.style.display = 'block';
                     isScannerRunning = true;
-                    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 }},
+                    html5QrCode.start({
+                            facingMode: "environment"
+                        }, {
+                            fps: 10,
+                            qrbox: {
+                                width: 250,
+                                height: 250
+                            }
+                        },
                         onScanSuccess,
-                        (errorMessage) => { /* do nothing */ }
+                        (errorMessage) => {
+                            /* do nothing */
+                        }
                     ).catch((err) => {
                         alert('ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบการอนุญาต');
                         qrReaderDiv.style.display = 'none';

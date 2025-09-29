@@ -61,9 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('settings/locations', [SettingController::class, 'storeLocation'])->name('settings.locations.store');
         Route::delete('settings/locations/{location}', [SettingController::class, 'destroyLocation'])->name('settings.locations.destroy');
 
-        Route::get('settings/assign-brands', [App\Http\Controllers\AssetTypeBrandController::class, 'index'])->name('settings.assign_brands.index');
-Route::post('settings/assign-brands', [App\Http\Controllers\AssetTypeBrandController::class, 'store'])->name('settings.assign_brands.store');
-        
+        Route::post('settings/assign-brands', [App\Http\Controllers\AssetTypeBrandController::class, 'store'])->name('settings.assign_brands.store');
+
         Route::post('settings/brands', [SettingController::class, 'storeBrand'])->name('settings.brands.store');
         Route::delete('settings/brands/{brand}', [SettingController::class, 'destroyBrand'])->name('settings.brands.destroy');
 

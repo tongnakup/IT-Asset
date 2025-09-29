@@ -9,7 +9,7 @@ use App\Models\AssetCategory;
 use App\Models\Position;
 use App\Models\Department;
 use App\Models\Location;
-use App\Models\Brand; 
+use App\Models\Brand;
 use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
@@ -19,22 +19,23 @@ class SettingController extends Controller
      */
     public function index()
     {
-        $assetTypes = AssetType::with('assetCategory')->orderBy('name')->get();
+
+        $assetTypes = AssetType::with('assetCategory', 'brands')->orderBy('name')->get();
         $assetStatuses = AssetStatus::orderBy('name')->get();
         $assetCategories = AssetCategory::orderBy('name')->get();
         $positions = Position::orderBy('name')->get();
         $departments = Department::orderBy('name')->get();
         $locations = Location::orderBy('name')->get();
-        $brands = Brand::orderBy('name')->get(); 
+        $brands = Brand::orderBy('name')->get();
 
         return view('settings.index', compact(
-            'assetTypes', 
-            'assetStatuses', 
-            'assetCategories', 
-            'positions', 
-            'departments', 
+            'assetTypes',
+            'assetStatuses',
+            'assetCategories',
+            'positions',
+            'departments',
             'locations',
-            'brands' 
+            'brands'
         ));
     }
 
@@ -43,14 +44,14 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255|unique:asset_categories,name']);
         AssetCategory::create($request->all());
-        Cache::forget('asset_categories'); 
+        Cache::forget('asset_categories');
         return back()->with('success', 'Asset Category added successfully.');
     }
 
     public function destroyCategory(AssetCategory $assetCategory)
     {
         $assetCategory->delete();
-        Cache::forget('asset_categories'); 
+        Cache::forget('asset_categories');
         return back()->with('success', 'Asset Category deleted successfully.');
     }
 
@@ -62,14 +63,14 @@ class SettingController extends Controller
             'asset_category_id' => 'required|exists:asset_categories,id'
         ]);
         AssetType::create($request->all());
-        Cache::forget('asset_types'); 
+        Cache::forget('asset_types');
         return back()->with('success', 'Asset Type added successfully.');
     }
 
     public function destroyType(AssetType $assetType)
     {
         $assetType->delete();
-        Cache::forget('asset_types'); 
+        Cache::forget('asset_types');
         return back()->with('success', 'Asset Type deleted successfully.');
     }
 
@@ -78,14 +79,14 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255|unique:asset_statuses,name']);
         AssetStatus::create($request->all());
-        Cache::forget('asset_statuses'); 
+        Cache::forget('asset_statuses');
         return back()->with('success', 'Asset Status added successfully.');
     }
 
     public function destroyStatus(AssetStatus $assetStatus)
     {
         $assetStatus->delete();
-        Cache::forget('asset_statuses'); 
+        Cache::forget('asset_statuses');
         return back()->with('success', 'Asset Status deleted successfully.');
     }
 
@@ -94,14 +95,14 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255|unique:positions,name']);
         Position::create($request->all());
-        Cache::forget('positions'); 
+        Cache::forget('positions');
         return back()->with('success', 'Position added successfully.');
     }
 
     public function destroyPosition(Position $position)
     {
         $position->delete();
-        Cache::forget('positions'); 
+        Cache::forget('positions');
         return back()->with('success', 'Position deleted successfully.');
     }
 
@@ -110,14 +111,14 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255|unique:departments,name']);
         Department::create($request->all());
-        Cache::forget('departments'); 
+        Cache::forget('departments');
         return back()->with('success', 'Department added successfully.');
     }
 
     public function destroyDepartment(Department $department)
     {
         $department->delete();
-        Cache::forget('departments'); 
+        Cache::forget('departments');
         return back()->with('success', 'Department deleted successfully.');
     }
 
@@ -126,14 +127,14 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255|unique:locations,name']);
         Location::create($request->all());
-        Cache::forget('locations'); 
+        Cache::forget('locations');
         return back()->with('success', 'Location added successfully.');
     }
 
     public function destroyLocation(Location $location)
     {
         $location->delete();
-        Cache::forget('locations'); 
+        Cache::forget('locations');
         return back()->with('success', 'Location deleted successfully.');
     }
 

@@ -1,4 +1,4 @@
-<form wire:submit.prevent="save">
+<form wire:submit="save">
     <div class="space-y-6">
         <div class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
@@ -6,35 +6,38 @@
                     <label for="asset_number_search" class="block text-sm font-medium text-gray-700">Asset Number
                         (ถ้าทราบ)</label>
                     <div class="flex items-center space-x-2 mt-1">
+                        {{-- ช่องกรอก --}}
                         <div class="flex-grow relative">
-                            <input type="text" name="asset_number" id="asset_number_search"
+                            <input type="text" id="asset_number_search"
                                 class="block w-full rounded-md border-gray-300 shadow-sm"
                                 placeholder="พิมพ์เพื่อค้นหา..." wire:model.live.debounce.300ms="asset_number"
                                 autocomplete="off">
-                            @if (!empty($searchResults) && $searchResults->count() > 0)
+
+                            {{-- ▼▼▼ [จุดที่แก้ไข] เปลี่ยน isNotEmpty() เป็น !empty() ▼▼▼ --}}
+                            @if (!empty($searchResults))
                                 <div
                                     class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
                                     <ul class="max-h-60 overflow-y-auto">
                                         @foreach ($searchResults as $result)
                                             <li class="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                                                wire:click.prevent="selectAsset({{ $result->id }})">
+                                                wire:click="selectAsset({{ $result->id }})"
+                                                wire:key="result-{{ $result->id }}">
                                                 <div class="font-semibold">{{ $result->asset_number }}</div>
-                                                <div class="text-xs text-gray-500">{{ $result->type->name ?? '' }} -
-                                                    {{ $result->brand->name ?? '' }}</div>
+                                                <div class="text-xs text-gray-500">{{ $result->type->name ?? '' }}</div>
                                             </li>
                                         @endforeach
                                     </ul>
                                 </div>
                             @endif
                         </div>
-                        <button type="button" id="scan-qr-btn"
-                            class="inline-flex items-center space-x-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 flex-shrink-0">
-                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
+                        {{-- ปุ่ม Scan QR Code --}}
+                        <button type="button" id="scan-qr-btn" title="Scan QR Code"
+                            class="flex-shrink-0 inline-flex items-center justify-center p-2 border border-gray-300 shadow-sm rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M1.5 1.5A1.5 1.5 0 0 1 3 0h1.5a.75.75 0 0 1 0 1.5H3a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 1-1.5 0V1.5zM22.5 1.5A1.5 1.5 0 0 0 21 0h-1.5a.75.75 0 0 0 0 1.5H21a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 0 1.5 0V1.5zM1.5 22.5A1.5 1.5 0 0 0 3 24h1.5a.75.75 0 0 0 0-1.5H3a.75.75 0 0 1-.75-.75v-1.5a.75.75 0 0 0-1.5 0v1.5zM22.5 22.5A1.5 1.5 0 0 1 21 24h-1.5a.75.75 0 0 1 0-1.5H21a.75.75 0 0 0 .75-.75v-1.5a.75.75 0 0 1 1.5 0v1.5zM3 10.5a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75z" />
                             </svg>
-                            <span>Scan QR</span>
                         </button>
                     </div>
                     @if ($lookupMessage)
@@ -49,64 +52,37 @@
                 <div>
                     <label for="category" class="block text-sm font-medium text-gray-700">หมวดหมู่ <span
                             class="text-red-600">*</span></label>
-                    <select id="category" name="asset_category_id" wire:model.live="asset_category_id"
+                    <input type="text" id="category" wire:model="asset_category_name"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        @if ($assetFound) disabled @endif>
-                        <option value="">-- กรุณาเลือก --</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                        @endforeach
-                    </select>
+                        @if ($assetFound) readonly @endif>
                 </div>
                 <div>
                     <label for="asset_type" class="block text-sm font-medium text-gray-700">ประเภทอุปกรณ์ <span
                             class="text-red-600">*</span></label>
-                    <select id="asset_type" name="asset_type_id" wire:model="asset_type_id"
+                    <input type="text" id="asset_type" wire:model="asset_type_name"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        @if ($types->isEmpty()) disabled @endif>
-                        @if ($types->isEmpty())
-                            <option value="">-- กรุณาเลือกหมวดหมู่ก่อน --</option>
-                        @else
-                            <option value="">-- กรุณาเลือกประเภท --</option>
-                            @foreach ($types as $type)
-                                <option value="{{ $type->id }}">{{ $type->name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
+                        @if ($assetFound) readonly @endif>
                 </div>
             </div>
             <div>
                 <label for="location" class="block text-sm font-medium text-gray-700">Location <span
                         class="text-red-600">*</span></label>
-                <select id="location" name="location_id" wire:model="location_id"
+                <input type="text" id="location" wire:model="location_name"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                    @if ($assetFound) disabled @endif>
-                    <option value="">-- กรุณาเลือกสถานที่ --</option>
-                    @foreach ($locations as $location)
-                        <option value="{{ $location->id }}">{{ $location->name }}</option>
-                    @endforeach
-                </select>
+                    @if ($assetFound) readonly @endif>
             </div>
         </div>
-
         <div>
             <label for="problem_description" class="block text-sm font-medium text-gray-700">กรุณาอธิบายปัญหา <span
                     class="text-red-600">*</span></label>
-            <textarea name="problem_description" id="problem_description" rows="4" wire:model="problem_description"
+            <textarea id="problem_description" rows="4" wire:model="problem_description"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required></textarea>
-            @error('problem_description')
-                <span class="text-red-500 text-xs">{{ $message }}</span>
-            @enderror
         </div>
         <div>
             <label for="image" class="block text-sm font-medium text-gray-700">แนบรูปภาพปัญหา (ถ้ามี)</label>
-            <input type="file" name="image" id="image" wire:model="image"
+            <input type="file" id="image" wire:model="image"
                 class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-            @error('image')
-                <span class="text-red-500 text-xs">{{ $message }}</span>
-            @enderror
         </div>
-
         <div class="mt-6 flex justify-end space-x-4">
             <a href="{{ route('dashboard') }}"
                 class="px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-50">Cancel</a>

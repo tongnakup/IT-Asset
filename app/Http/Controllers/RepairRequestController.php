@@ -9,9 +9,10 @@ use App\Notifications\RepairStatusUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
-use App\Models\AssetType;
-use App\Models\Location;
-use App\Models\AssetCategory; // <-- [สำคัญ] เพิ่ม Model นี้
+// ไม่จำเป็นต้องใช้ Model เหล่านี้ใน Controller อีกต่อไป
+// use App\Models\AssetType;
+// use App\Models\Location;
+// use App\Models\AssetCategory;
 
 class RepairRequestController extends Controller
 {
@@ -42,46 +43,19 @@ class RepairRequestController extends Controller
      */
     public function create()
     {
-        // ดึงข้อมูลทั้งหมดที่จำเป็นสำหรับ Dropdown (ทั้ง id และ name)
-        $categories = AssetCategory::orderBy('name')->get(['id', 'name']);
-        $locations = Location::orderBy('name')->get(['id', 'name']);
-
-        // ส่งข้อมูลไปให้ View
-        return view('repair_requests.user.create', compact('categories', 'locations'));
+        // ถูกต้องแล้ว! แค่แสดง View ก็พอ
+        return view('repair_requests.user.create');
     }
 
     /**
      * Store a newly created resource in storage.
-     * ▼▼▼ [แก้ไข] ส่วนนี้คือส่วนที่แก้ไขทั้งหมด ▼▼▼
+     * (ฟังก์ชันนี้ไม่ได้ถูกเรียกใช้อีกต่อไปเมื่อใช้ Livewire)
      */
     public function store(Request $request)
     {
-        // ตรวจสอบความถูกต้องของข้อมูลที่ส่งมา (ใช้ _id)
-        $validatedData = $request->validate([
-            'asset_category_id' => 'required|exists:asset_categories,id',
-            'asset_type_id' => 'required|exists:asset_types,id',
-            'location_id' => 'required|exists:locations,id',
-            'asset_number' => 'nullable|string|max:255',
-            'problem_description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        $validatedData['user_id'] = Auth::id();
-        $validatedData['status'] = 'Pending';
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('repairs', 'public');
-            $validatedData['image_path'] = $path;
-        }
-
-        $newRepairRequest = RepairRequest::create($validatedData);
-
-        $admins = User::where('role', 'admin')->get();
-        if ($admins->isNotEmpty()) {
-            Notification::send($admins, new NewRepairRequest($newRepairRequest));
-        }
-
-        return redirect()->route('repair_requests.my')->with('success', 'ส่งใบแจ้งซ่อมเรียบร้อยแล้ว');
+        // เนื่องจากฟอร์มถูกจัดการโดย Livewire ฟังก์ชันนี้จึงไม่ถูกเรียก
+        // เราสามารถปล่อยให้มันว่างไว้ หรือ redirect กลับไปเฉยๆ ก็ได้
+        return redirect()->route('repair_requests.create');
     }
 
     /**
@@ -104,7 +78,6 @@ class RepairRequestController extends Controller
 
         $repairRequest->update(['status' => $request->status]);
 
-        // Send notification to the user
         $user = $repairRequest->user;
         if ($user) {
             $user->notify(new RepairStatusUpdated($repairRequest));
