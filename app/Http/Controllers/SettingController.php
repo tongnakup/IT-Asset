@@ -127,19 +127,17 @@ class SettingController extends Controller
     {
         $request->validate(['name' => 'required|string|max:255|unique:locations,name']);
         Location::create($request->all());
-        Cache::forget('locations');
+        Cache::forget('locations_collection');
         return back()->with('success', 'Location added successfully.');
     }
 
     public function destroyLocation(Location $location)
     {
         $location->delete();
-        Cache::forget('locations');
+        Cache::forget('locations_collection');
         return back()->with('success', 'Location deleted successfully.');
     }
 
-    // ▼▼▼ 4. เพิ่มฟังก์ชันสำหรับจัดการ Brands ใหม่ทั้งหมด ▼▼▼
-    // --- Brand Methods ---
     public function storeBrand(Request $request)
     {
         $request->validate(['name' => 'required|string|max:255|unique:brands,name']);

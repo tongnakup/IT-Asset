@@ -128,10 +128,9 @@
                                                     // ส่วนของ Status ถูกต้องแล้ว
                                                     $statusName = $asset->status->name ?? 'Unknown';
                                                     $statusClass = match (strtolower($statusName)) {
-                                                        'in use' => 'bg-green-100 text-green-800',
-                                                        'in stock' => 'bg-yellow-100 text-yellow-800',
+                                                        'use' => 'bg-green-100 text-green-800',
+                                                        'stock' => 'bg-yellow-100 text-yellow-800',
                                                         'broken' => 'bg-red-100 text-red-800',
-                                                        'retired' => 'bg-gray-200 text-gray-600',
                                                         default => 'bg-gray-100 text-gray-800',
                                                     };
                                                 @endphp
@@ -182,21 +181,23 @@
                                                         </button>
 
                                                         {{-- Delete Button Form --}}
-                                                        <form action="{{ route('it_assets.destroy', $asset->id) }}"
-                                                            method="POST" onsubmit="return confirm('Are you sure?');"
-                                                            class="inline">
+                                                        <form id="delete-form-{{ $asset->id }}"
+                                                            action="{{ route('it_assets.destroy', $asset->id) }}"
+                                                            method="POST" class="hidden">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit"
-                                                                class="text-red-600 hover:text-red-900" title="Delete">
-                                                                <svg class="h-5 w-5" fill="currentColor"
-                                                                    viewBox="0 0 20 20">
-                                                                    <path fill-rule="evenodd"
-                                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                                        clip-rule="evenodd"></path>
-                                                                </svg>
-                                                            </button>
                                                         </form>
+
+                                                        <button type="button"
+                                                            @click="openDeleteModal({{ $asset->id }})"
+                                                            class="text-red-600 hover:text-red-900" title="Delete">
+                                                            <svg class="h-5 w-5" fill="currentColor"
+                                                                viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                                    clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </td>
@@ -308,13 +309,9 @@
 
                                     <div>
                                         <label class="block text-sm font-medium">Brand</label>
-                                        <select name="brand_id" x-model="editFormData.brand_id"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                            <option value="">-- Select Brand --</option>
-                                            <template x-for="brand in dropdowns.brandsForType" :key="brand.id">
-                                                <option :value="brand.id" x-text="brand.name"></option>
-                                            </template>
-                                        </select>
+                                        <input type="text" name="brand_name" x-model="editFormData.brand_name"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                                            placeholder="Enter brand name" required>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-4">
@@ -383,7 +380,27 @@
                         </form>
                     </div>
                 </div>
+                <x-modal name="confirm-asset-deletion" focusable>
+                    <div class="p-6">
+                        <h2 class="text-lg font-medium text-gray-900">
+                            {{ __('Are you sure you want to delete this asset?') }}
+                        </h2>
 
+                        <p class="mt-1 text-sm text-gray-600">
+                            {{ __('Once the asset is deleted, this action cannot be undone.') }}
+                        </p>
+
+                        <div class="mt-6 flex justify-end">
+                            <x-secondary-button x-on:click="$dispatch('close')">
+                                {{ __('Cancel') }}
+                            </x-secondary-button>
+
+                            <x-danger-button class="ms-3" @click="confirmDelete()">
+                                {{ __('Delete Asset') }}
+                            </x-danger-button>
+                        </div>
+                    </div>
+                </x-modal>
             </div>
         </div>
     </div>
@@ -394,6 +411,7 @@
                 return {
                     showEditModal: false,
                     isLoading: false,
+                    assetToDeleteId: null,
                     notification: {
                         show: false,
                         message: '',
@@ -418,32 +436,37 @@
                         fetch(`/it_assets/${assetId}/edit-data`)
                             .then(response => response.json())
                             .then(data => {
-                                this.editFormData = data.asset;
-                                this.imagePreview = data.asset.image_path ? `/storage/${data.asset.image_path}` : '';
-                                if (data.asset.employee) {
-                                    this.employeeSearchQuery = data.asset.employee.employee_id;
-                                    this.editFormData.first_name = data.asset.employee.first_name;
-                                    this.editFormData.last_name = data.asset.employee.last_name;
-                                    this.editFormData.position = data.asset.employee.position;
-                                    this.editFormData.employee_id = data.asset.employee.id;
-                                } else {
-                                    this.editFormData.employee = {};
-                                    this.employeeSearchQuery = '';
-                                    this.editFormData.first_name = '';
-                                    this.editFormData.last_name = '';
-                                    this.editFormData.position = '';
-                                    this.editFormData.employee_id = null;
-                                }
+
                                 this.dropdowns.types = data.types;
                                 this.dropdowns.statuses = data.statuses;
                                 this.dropdowns.categories = data.categories;
                                 this.dropdowns.locations = data.locations;
-                                this.showEditModal = true;
-                                this.employeeSearchResults = [];
 
                                 this.$nextTick(() => {
+                                    this.editFormData = data.asset;
+                                    this.editFormData.brand_name = data.asset.brand ? data.asset.brand.name : '';
+                                    this.imagePreview = data.asset.image_path ?
+                                        `/uploads/${data.asset.image_path}` : '';
+                                    if (data.asset.employee) {
+                                        this.employeeSearchQuery = data.asset.employee.employee_id;
+                                        this.editFormData.first_name = data.asset.employee.first_name;
+                                        this.editFormData.last_name = data.asset.employee.last_name;
+                                        this.editFormData.position = data.asset.employee.position;
+                                        this.editFormData.employee_id = data.asset.employee.id;
+                                    } else {
+                                        this.editFormData.employee = {};
+                                        this.employeeSearchQuery = '';
+                                        this.editFormData.first_name = '';
+                                        this.editFormData.last_name = '';
+                                        this.editFormData.position = '';
+                                        this.editFormData.employee_id = null;
+                                    }
+
                                     this.typeChanged(this.editFormData.asset_type_id, true);
                                 });
+
+                                this.showEditModal = true;
+                                this.employeeSearchResults = [];
                             });
                     },
 
@@ -554,6 +577,21 @@
                                 this.showNotification(errorMessage, 'error');
                             })
                             .finally(() => this.isLoading = false);
+                    },
+
+                    openDeleteModal(assetId) {
+                        this.assetToDeleteId = assetId;
+                        this.$dispatch('open-modal', 'confirm-asset-deletion');
+                    },
+
+                    confirmDelete() {
+                        if (this.assetToDeleteId) {
+                            const form = document.getElementById('delete-form-' + this.assetToDeleteId);
+                            if (form) {
+                                form.submit();
+                            }
+                        }
+                        this.$dispatch('close');
                     },
 
                     showNotification(message, type) {

@@ -7,14 +7,9 @@
         </div>
     </x-slot>
 
-    {{-- @if (session('success'))
-        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif --}}
-
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        {{-- ▼▼▼ [ จุดแก้ไขที่ 1: เปลี่ยนชื่อเป็น userPageManager() ] ▼▼▼ --}}
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="userPageManager()">
 
             <div>
                 @if (session()->has('success'))
@@ -79,13 +74,15 @@
                                                         class="text-indigo-600 hover:text-indigo-900">Edit</button>
 
                                                     @if (auth()->id() != $user->id)
-                                                        <form action="{{ route('users.destroy', $user->id) }}"
-                                                            method="POST" onsubmit="return confirm('Are you sure?');">
+                                                        <form id="delete-form-{{ $user->id }}"
+                                                            action="{{ route('users.destroy', $user->id) }}"
+                                                            method="POST" class="hidden">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit"
-                                                                class="text-red-600 hover:text-red-900">Delete</button>
                                                         </form>
+                                                        <button type="button"
+                                                            @click="openDeleteModal({{ $user->id }})"
+                                                            class="text-red-600 hover:text-red-900">Delete</button>
                                                     @endif
                                                 </div>
                                             </td>
@@ -103,11 +100,51 @@
                     </div>
                 </div>
 
-                {{-- เรียกใช้ Livewire Components  --}}
+                <x-modal name="confirm-user-deletion" focusable>
+                    <div class="p-6">
+                        <h2 class="text-lg font-medium text-gray-900">
+                            {{ __('Are you sure you want to delete this user?') }}
+                        </h2>
+                        <p class="mt-1 text-sm text-gray-600">
+                            {{ __('Once this user is deleted, all of their related data will be permanently removed. This action cannot be undone.') }}
+                        </p>
+                        <div class="mt-6 flex justify-end">
+                            <x-secondary-button x-on:click="$dispatch('close')">
+                                {{ __('Cancel') }}
+                            </x-secondary-button>
+                            <x-danger-button class="ms-3" @click="confirmDelete()">
+                                {{ __('Delete User') }}
+                            </x-danger-button>
+                        </div>
+                    </div>
+                </x-modal>
+
                 <livewire:user-create-modal />
                 <livewire:user-edit-modal />
-
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('userPageManager', () => ({
+                    userToDeleteId: null,
+                    openDeleteModal(userId) {
+                        this.userToDeleteId = userId;
+                        this.$dispatch('open-modal', 'confirm-user-deletion');
+                    },
+                    confirmDelete() {
+                        if (this.userToDeleteId) {
+                            const form = document.getElementById('delete-form-' + this.userToDeleteId);
+                            if (form) {
+                                form.submit();
+                            }
+                        }
+                        this.$dispatch('close');
+                    }
+                }));
+            });
+        </script>
+    @endpush
 </x-app-layout>

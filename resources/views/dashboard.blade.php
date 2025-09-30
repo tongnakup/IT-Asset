@@ -49,9 +49,16 @@
                         <h3 class="text-lg font-semibold text-orange-100">Pending Requests</h3>
                         <p class="text-4xl font-bold mt-2">{{ $stats['pending_requests'] }}</p>
                     </div>
+                    <div class="bg-green-500 text-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-green-100">Resolved</h3>
+                        <p class="text-4xl font-bold mt-2">{{ $stats['resolved_requests'] }}</p>
+                    </div>
+                    <div class="bg-red-500 text-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-red-100">Rejected</h3>
+                        <p class="text-4xl font-bold mt-2">{{ $stats['rejected_requests'] }}</p>
+                    </div>
                 </div>
 
-                {{-- ▼▼▼ [START] แก้ไขการแสดงผลการ์ด ▼▼▼ --}}
                 @foreach ($categoryStats as $category)
                     <div class="mt-10">
                         <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ $category['name'] }}</h3>
@@ -86,7 +93,6 @@
                         </div>
                     </div>
                 @endforeach
-                {{-- ▲▲▲ [END] จบส่วนแสดงผล ▲▲▲ --}}
 
                 {{-- Charts --}}
                 <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -163,12 +169,11 @@
                                 <h3 class="text-lg font-semibold text-gray-800 border-b pb-3 mb-4">My IT Assets</h3>
                                 <div class="space-y-2">
                                     @forelse($userAssets as $asset)
-                                        {{-- ▼▼▼ [ADDED] เพิ่ม Hover Effect ที่นี่ ▼▼▼ --}}
                                         <a href="#"
                                             class="block p-4 rounded-lg cursor-pointer transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50">
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center gap-4">
-                                                    {{-- [Optional] เพิ่มส่วนแสดงรูปภาพ ถ้ามี --}}
+
                                                     <div class="hidden sm:block bg-gray-100 p-2 rounded-lg">
                                                         <svg class="h-8 w-8 text-gray-500" fill="none"
                                                             stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +201,7 @@
                                                     @endphp
                                                     <span
                                                         class="hidden md:inline-flex px-2 text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">{{ $asset->status }}</span>
-                                                    {{-- ▼▼▼ [ADDED] เพิ่ม Hover Effect ที่นี่ ▼▼▼ --}}
+
                                                     <a href="{{ route('repair_requests.create', ['asset_number' => $asset->asset_number, 'asset_type' => $asset->type]) }}"
                                                         class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline font-semibold transition-colors duration-200">
                                                         Request Repair
@@ -272,13 +277,12 @@
     @if (auth()->user()->role == 'admin')
         @push('scripts')
             <script>
-                // [เปลี่ยน] จาก 'DOMContentLoaded' เป็น 'livewire:navigated'
                 document.addEventListener('livewire:navigated', function() {
 
                     // --- Chart 1: Assets by Type (Pie Chart) ---
                     const pieCanvas = document.getElementById('assetTypeChart');
                     if (pieCanvas) {
-                        // [เพิ่ม] ตรวจสอบและทำลายกราฟเก่า ถ้ามี
+
                         let existingPieChart = Chart.getChart(pieCanvas);
                         if (existingPieChart) {
                             existingPieChart.destroy();
@@ -317,7 +321,7 @@
                     // --- Chart 2: Assets by Brand (Bar Chart) ---
                     const barCanvas = document.getElementById('assetBrandChart');
                     if (barCanvas) {
-                        // [เพิ่ม] ตรวจสอบและทำลายกราฟเก่า ถ้ามี
+
                         let existingBarChart = Chart.getChart(barCanvas);
                         if (existingBarChart) {
                             existingBarChart.destroy();
@@ -361,7 +365,7 @@
                     // --- Chart 3: Assets by Status (Doughnut Chart) ---
                     const statusCanvas = document.getElementById('assetStatusChart');
                     if (statusCanvas) {
-                        // [เพิ่ม] ตรวจสอบและทำลายกราฟเก่า ถ้ามี
+
                         let existingStatusChart = Chart.getChart(statusCanvas);
                         if (existingStatusChart) {
                             existingStatusChart.destroy();

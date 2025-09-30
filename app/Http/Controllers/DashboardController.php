@@ -22,6 +22,8 @@ class DashboardController extends Controller
             $stats = [
                 'total' => ItAsset::count(),
                 'pending_requests' => RepairRequest::where('status', 'Pending')->count(),
+                'resolved_requests' => RepairRequest::where('status', 'Resolved')->count(),
+                'rejected_requests' => RepairRequest::where('status', 'Rejected')->count(),
             ];
             $categories = AssetCategory::with('assetTypes.itAssets')->get();
             $categoryStats = $categories->map(function ($category) {
@@ -48,13 +50,10 @@ class DashboardController extends Controller
             $statusChartData['data'] = $assetsByStatus->values();
             return view('dashboard', compact('stats', 'categoryStats', 'pieChartData', 'barChartData', 'statusChartData', 'latestAnnouncement', 'cardColors'));
         } else {
-            // --- ▼▼▼ [แก้ไข] ส่วนของ User ทั่วไปให้ดึงข้อมูลครบถ้วน ▼▼▼ ---
 
             $employeeId = $user->employee_id;
-
-            // ใช้ eager loading (`with`) เพื่อดึงข้อมูลที่เกี่ยวข้องมาพร้อมกัน
             $userAssets = ItAsset::where('employee_id', $employeeId)
-                ->with(['assetType', 'brand', 'status']) // <-- จุดสำคัญ
+                ->with(['assetType', 'brand', 'status'])
                 ->get();
 
             $userRequestsQuery = RepairRequest::where('user_id', $user->id);
@@ -65,7 +64,6 @@ class DashboardController extends Controller
                 'resolvedRequests' => (clone $userRequestsQuery)->where('status', 'Resolved')->count(),
             ];
 
-            // ดึงข้อมูล request พร้อมกับ assetType เพื่อแก้ปัญหาหน้า Dashboard
             $recentRequests = $userRequestsQuery->with('assetType')->latest()->take(5)->get();
 
             return view('dashboard', [

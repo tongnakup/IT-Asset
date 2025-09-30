@@ -18,6 +18,7 @@ use App\Models\Location;
 use App\Models\Brand;
 use Illuminate\Validation\Rule;
 
+
 class ItAssetController extends Controller
 {
     /**
@@ -76,7 +77,8 @@ class ItAssetController extends Controller
      */
     public function getEditData(ItAsset $itAsset)
     {
-        $itAsset->load('employee');
+        $itAsset->load('employee', 'brand', 'type', 'status', 'location');
+        //$itAsset->load('employee');
         $locations = Cache::remember('locations_collection', 60, fn() => Location::orderBy('name')->get());
         $brands = Cache::remember('brands_collection', 60, fn() => Brand::orderBy('name')->get());
         $statuses = Cache::remember('asset_statuses_collection', 60, fn() => AssetStatus::orderBy('name')->get());
@@ -130,17 +132,30 @@ class ItAssetController extends Controller
      */
     public function update(Request $request, ItAsset $itAsset)
     {
+
         $validatedData = $request->validate($this->getValidationRules($itAsset));
+        $brand = Brand::firstOrCreate(
+            ['name' => $validatedData['brand_name']]
+        );
+
+        $updateData = $validatedData;
+        $updateData['brand_id'] = $brand->id;
+        unset($updateData['brand_name']);
+
 
         if ($request->hasFile('image')) {
-            if ($itAsset->image_path) {
-                Storage::disk('public')->delete($itAsset->image_path);
+
+            if ($itAsset->image_path && file_exists(public_path('uploads/' . $itAsset->image_path))) {
+                unlink(public_path('uploads/' . $itAsset->image_path));
             }
-            $path = $request->file('image')->store('assets', 'public_direct');
-            $validatedData['image_path'] = $path;
+
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/assets'), $filename);
+            $updateData['image_path'] = 'assets/' . $filename;
         }
 
-        $itAsset->update($validatedData);
+        $itAsset->update($updateData);
 
         return response()->json(['success' => true, 'message' => 'Asset updated successfully.']);
     }
@@ -150,7 +165,7 @@ class ItAssetController extends Controller
      */
     public function show(ItAsset $itAsset)
     {
-        // ใช้ชื่อ relationship ที่ถูกต้อง: 'type.assetCategory'
+
         $itAsset->load(['employee', 'type.assetCategory', 'brand', 'status', 'location']);
         $repairHistory = RepairRequest::where('asset_number', $itAsset->asset_number)->with('user')->latest()->get();
         $updateHistory = ActivityLog::where('description', 'like', '%' . $itAsset->asset_number . '%')->with('user')->latest()->get();
@@ -201,7 +216,7 @@ class ItAssetController extends Controller
 
     public function lookupByAssetNumber($assetNumber)
     {
-        // ใช้ชื่อ relationship ที่ถูกต้อง: 'type.assetCategory'
+
         $asset = ItAsset::where('asset_number', $assetNumber)
             ->with(['type.assetCategory', 'location'])
             ->first();
@@ -210,7 +225,7 @@ class ItAssetController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    // ใช้ชื่อ relationship ที่ถูกต้อง: 'type'
+
                     'asset_category_id' => $asset->type->asset_category_id,
                     'asset_type_id'     => $asset->asset_type_id,
                     'location_id'       => $asset->location_id,
@@ -236,7 +251,7 @@ class ItAssetController extends Controller
             'serial_number' => 'nullable|string|max:255',
             'asset_category_id' => 'required|exists:asset_categories,id',
             'asset_type_id' => 'required|exists:asset_types,id',
-            'brand_id' => 'required|exists:brands,id',
+            'brand_name' => 'required|string|max:255',
             'model' => 'nullable|string|max:255',
             'purchase_date' => 'nullable|date',
             'warranty_end_date' => 'nullable|date|after_or_equal:purchase_date',

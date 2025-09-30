@@ -6,7 +6,8 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="repairRequestManager()">
+
             @if (session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
                     role="alert">
@@ -64,18 +65,18 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex items-center justify-end space-x-4">
 
-                                                {{-- ▼▼▼ [แก้ไขจุดที่ 1] ▼▼▼ --}}
                                                 <a href="{{ route('repair_requests.edit', $request->id) }}"
                                                     class="text-indigo-600 hover:text-indigo-900">Edit Status</a>
 
-                                                {{-- ▼▼▼ [แก้ไขจุดที่ 2] ▼▼▼ --}}
-                                                <form action="{{ route('repair_requests.destroy', $request->id) }}"
-                                                    method="POST" onsubmit="return confirm('Are you sure?');">
+                                                <form id="delete-request-{{ $request->id }}"
+                                                    action="{{ route('repair_requests.destroy', $request->id) }}"
+                                                    method="POST" class="hidden">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="text-red-600 hover:text-red-900">Delete</button>
                                                 </form>
+                                                <button type="button"
+                                                    @click="openDeleteModal('delete-request-{{ $request->id }}')"
+                                                    class="text-red-600 hover:text-red-900">Delete</button>
 
                                             </div>
                                         </td>
@@ -83,19 +84,6 @@
                                 @empty
                                     <tr>
                                         <td colspan="5" class="px-6 py-16 text-center">
-                                            <div class="flex flex-col items-center justify-center text-gray-500">
-                                                <svg class="h-16 w-16 text-gray-400 mb-4"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                                </svg>
-                                                <h3 class="text-xl font-semibold text-gray-700">ยังไม่มีรายการแจ้งซ่อม
-                                                </h3>
-                                                <p class="mt-2 text-sm">
-                                                    เมื่อมีผู้ใช้แจ้งซ่อมสินทรัพย์เข้ามา<br>รายการทั้งหมดจะแสดงอยู่ที่นี่
-                                                </p>
-                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -104,6 +92,51 @@
                     </div>
                 </div>
             </div>
+
+            <x-modal name="confirm-request-deletion" focusable>
+                <div class="p-6 text-center">
+                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <h2 class="mb-5 text-lg font-normal text-gray-500">
+                        Are you sure you want to delete this repair request?
+                    </h2>
+                    <div class="flex justify-center gap-4">
+                        <x-secondary-button x-on:click="$dispatch('close')">
+                            No, cancel
+                        </x-secondary-button>
+                        <x-danger-button @click="confirmDelete()">
+                            Yes, I'm sure
+                        </x-danger-button>
+                    </div>
+                </div>
+            </x-modal>
+
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('repairRequestManager', () => ({
+                    formIdToDelete: null,
+                    openDeleteModal(formId) {
+                        this.formIdToDelete = formId;
+                        this.$dispatch('open-modal', 'confirm-request-deletion');
+                    },
+                    confirmDelete() {
+                        if (this.formIdToDelete) {
+                            const form = document.getElementById(this.formIdToDelete);
+                            if (form) {
+                                form.submit();
+                            }
+                        }
+                        this.$dispatch('close');
+                    }
+                }));
+            });
+        </script>
+    @endpush
 </x-app-layout>
