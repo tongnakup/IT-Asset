@@ -100,7 +100,6 @@
                         <span class="mx-4 font-medium">Manage Repairs</span>
                     </a>
 
-                    {{-- ▼▼▼ [START] โค้ดที่แก้ไขแล้ว ▼▼▼ --}}
                     <a href="{{ route('settings.index') }}"
                         class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('settings.*') ? 'bg-gray-900' : '' }}">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -110,7 +109,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span class="mx-4 font-medium">Setting</span>
+                        <span class="mx-4 font-medium">settings</span>
                     </a>
 
                 </div>
