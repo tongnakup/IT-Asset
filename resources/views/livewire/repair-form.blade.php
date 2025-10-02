@@ -13,7 +13,6 @@
                                 placeholder="พิมพ์เพื่อค้นหา..." wire:model.live.debounce.300ms="asset_number"
                                 autocomplete="off">
 
-                            {{-- ▼▼▼ [จุดที่แก้ไข] เปลี่ยน isNotEmpty() เป็น !empty() ▼▼▼ --}}
                             @if (!empty($searchResults))
                                 <div
                                     class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
@@ -83,14 +82,16 @@
             <input type="file" id="image" wire:model="image"
                 class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
         </div>
+
         <div class="mt-6 flex justify-end space-x-4">
             <a href="{{ route('dashboard') }}"
-                class="px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-50">Cancel</a>
+                class="px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-red-700">Cancel</a>
             <button type="submit"
-                class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-indigo-700">
+                class="px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-green-700">
                 <span wire:loading.remove>Submit Request</span>
                 <span wire:loading>Submitting...</span>
             </button>
         </div>
+
     </div>
 </form>

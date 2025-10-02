@@ -36,6 +36,21 @@ class UserCreateModal extends Component
         $this->showModal = true;
     }
 
+    public function updatedSelectedPosition($positionId)
+    {
+        if (!empty($positionId)) {
+
+            $position = Position::with('department')->find($positionId);
+            if ($position) {
+
+                $this->selectedDepartment = $position->department_id;
+            }
+        } else {
+
+            $this->selectedDepartment = '';
+        }
+    }
+
     public function closeModal()
     {
         $this->showModal = false;
@@ -44,7 +59,13 @@ class UserCreateModal extends Component
 
     public function save()
     {
+        $this->name = trim($this->name);
+        $this->email = trim($this->email);
+        $this->employee_id = trim($this->employee_id);
+        $this->first_name = trim($this->first_name);
+        $this->last_name = trim($this->last_name);
         $validated = $this->validate([
+
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',

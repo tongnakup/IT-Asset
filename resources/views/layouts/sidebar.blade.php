@@ -1,32 +1,42 @@
 <div x-show="sidebarOpen" class="md:hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-20" @click="sidebarOpen = false"
     x-cloak></div>
 
+
 <div :class="{ 'translate-x-0 ease-out': sidebarOpen, '-translate-x-full ease-in': !sidebarOpen }"
     class="fixed inset-y-0 left-0 w-64 bg-gray-800 text-white flex flex-col shadow-lg z-30
-            transform transition-transform duration-300
-            md:translate-x-0">
-    <div class="h-20 flex items-center justify-center border-b border-gray-700 p-4 flex-shrink-0">
+           transform transition-transform duration-300
+           md:translate-x-0"
+    x-data="{ searchTerm: '' }">
+
+
+    <div class="flex flex-col items-center justify-center p-6 space-y-4 border-b border-gray-700 flex-shrink-0">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('images/logo2.png') }}" alt="ANJI-NYK Logo" style="height: auto; width: auto;">
+            {{-- ▼▼▼ [ แก้ไขชื่อไฟล์ และ เพิ่ม class ] ▼▼▼ --}}
+            <img src="{{ asset('images/logo1.jpg') }}" alt="ANJI-NYK Logo" class="w-32 h-auto rounded-lg mix-blend-normal">
         </a>
+        <h1 class="text-xl font-semibold text-white tracking-wider">AnJi | NYK</h1>
     </div>
 
-    <nav class="flex-grow px-4 py-6 overflow-y-auto">
-        <a href="{{ route('dashboard') }}"
-            class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('dashboard') ? 'bg-gray-900' : '' }}">
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            <span class="mx-4 font-medium">Dashboard</span>
-        </a>
+    <nav class="flex-grow px-4 pb-6 overflow-y-auto">
+        <div x-show="searchTerm === '' || 'Dashboard'.toLowerCase().includes(searchTerm.toLowerCase())">
+            <a href="{{ route('dashboard') }}"
+                class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('dashboard') ? 'bg-gray-900' : '' }}">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                <span class="mx-4 font-medium">Dashboard</span>
+            </a>
+        </div>
 
         {{-- ===== Support Menu (For All Users) ===== --}}
-        <div class="mt-6">
+        <div class="mt-6"
+            x-show="searchTerm === '' || 'support new repair request my requests announcements'.toLowerCase().includes(searchTerm.toLowerCase())">
             <p class="px-4 text-xs uppercase text-gray-400 font-semibold tracking-wider">Support</p>
             <div class="mt-2 space-y-1">
                 <a href="{{ route('repair_requests.create') }}"
+                    x-show="searchTerm === '' || 'new repair request'.toLowerCase().includes(searchTerm.toLowerCase())"
                     class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('repair_requests.create') ? 'bg-gray-900' : '' }}">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -36,6 +46,7 @@
                     <span class="mx-4 font-medium">New Repair Request</span>
                 </a>
                 <a href="{{ route('repair_requests.my') }}"
+                    x-show="searchTerm === '' || 'my requests'.toLowerCase().includes(searchTerm.toLowerCase())"
                     class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('repair_requests.my') ? 'bg-gray-900' : '' }}">
                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -47,8 +58,8 @@
             </div>
 
             <a href="{{ route('announcements.index') }}"
+                x-show="searchTerm === '' || 'announcements'.toLowerCase().includes(searchTerm.toLowerCase())"
                 class="flex items-center px-4 py-2.5 mt-2 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200 {{ request()->routeIs('announcements.*') ? 'bg-gray-900 text-white' : '' }}">
-
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -60,19 +71,22 @@
 
         {{-- Admin Menu --}}
         @if (auth()->user()->role == 'admin')
-            <div class="mt-6">
+            <div class="mt-6"
+                x-show="searchTerm === '' || 'admin controls it asset user management activity log manage repairs settings'.toLowerCase().includes(searchTerm.toLowerCase())">
                 <p class="px-4 text-xs uppercase text-gray-400 font-semibold tracking-wider">Admin Controls</p>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('it_assets.index') }}"
+                        x-show="searchTerm === '' || 'it asset'.toLowerCase().includes(searchTerm.toLowerCase())"
                         class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('it_assets.*') ? 'bg-gray-900' : '' }}">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span class="mx-4 font-medium">IT Asset</span>
+                        <span class="mx-4 font-medium">Asset</span>
                     </a>
                     <a href="{{ route('users.index') }}"
+                        x-show="searchTerm === '' || 'user management'.toLowerCase().includes(searchTerm.toLowerCase())"
                         class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('users.*') ? 'bg-gray-900' : '' }}">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -82,6 +96,7 @@
                         <span class="mx-4 font-medium">User Management</span>
                     </a>
                     <a href="{{ route('activity_logs.index') }}"
+                        x-show="searchTerm === '' || 'activity log'.toLowerCase().includes(searchTerm.toLowerCase())"
                         class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('activity_logs.index') ? 'bg-gray-900' : '' }}">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -91,6 +106,7 @@
                         <span class="mx-4 font-medium">Activity Log</span>
                     </a>
                     <a href="{{ route('repair_requests.index') }}"
+                        x-show="searchTerm === '' || 'manage repairs'.toLowerCase().includes(searchTerm.toLowerCase())"
                         class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('repair_requests.index', 'repair_requests.edit') ? 'bg-gray-900' : '' }}">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke-width="1.5" stroke="currentColor">
@@ -99,8 +115,8 @@
                         </svg>
                         <span class="mx-4 font-medium">Manage Repairs</span>
                     </a>
-
                     <a href="{{ route('settings.index') }}"
+                        x-show="searchTerm === '' || 'settings'.toLowerCase().includes(searchTerm.toLowerCase())"
                         class="flex items-center px-4 py-2 mt-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white {{ request()->routeIs('settings.*') ? 'bg-gray-900' : '' }}">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
@@ -109,9 +125,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span class="mx-4 font-medium">settings</span>
+                        <span class="mx-4 font-medium">Settings</span>
                     </a>
-
                 </div>
             </div>
         @endif

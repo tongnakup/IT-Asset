@@ -8,7 +8,6 @@
     </x-slot>
 
     <div class="py-12">
-        {{-- ▼▼▼ [ จุดแก้ไขที่ 1: เปลี่ยนชื่อเป็น userPageManager() ] ▼▼▼ --}}
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="userPageManager()">
 
             <div>
@@ -21,7 +20,7 @@
 
                 <div class="flex justify-end mb-4">
                     <button @click="$dispatch('openCreateModal')"
-                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         + Add New User
                     </button>
                 </div>
@@ -69,11 +68,19 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div class="flex items-center justify-start space-x-4">
+                                                    {{-- ▼▼▼ [ 1. เปลี่ยนปุ่ม Edit เป็นไอคอนดินสอ ] ▼▼▼ --}}
                                                     <button
                                                         onclick="Livewire.dispatch('showUserEditModal', { userId: {{ $user->id }} })"
-                                                        class="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                        class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path
+                                                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z">
+                                                            </path>
+                                                        </svg>
+                                                    </button>
 
                                                     @if (auth()->id() != $user->id)
+                                                        {{-- ▼▼▼ [ 2. เปลี่ยนปุ่ม Delete เป็นไอคอนถังขยะ ] ▼▼▼ --}}
                                                         <form id="delete-form-{{ $user->id }}"
                                                             action="{{ route('users.destroy', $user->id) }}"
                                                             method="POST" class="hidden">
@@ -82,7 +89,14 @@
                                                         </form>
                                                         <button type="button"
                                                             @click="openDeleteModal({{ $user->id }})"
-                                                            class="text-red-600 hover:text-red-900">Delete</button>
+                                                            class="text-red-600 hover:text-red-900" title="Delete">
+                                                            <svg class="h-5 w-5" fill="currentColor"
+                                                                viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                                    clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </button>
                                                     @endif
                                                 </div>
                                             </td>

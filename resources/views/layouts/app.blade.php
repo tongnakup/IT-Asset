@@ -6,35 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- ▼▼▼ [ แก้ไขส่วนนี้ ] ▼▼▼ --}}
+    @persist('favicon')
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    @endpersist
     <title>{{ config('app.name', 'Laravel') }}</title>
+    {{-- ▲▲▲ [ จบส่วนที่แก้ไข ] ▲▲▲ --}}
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     @livewireStyles
 </head>
 
 <body class="font-sans antialiased">
     <div x-data="{ sidebarOpen: false }" class="relative min-h-screen md:flex bg-gray-100">
-
-        <!-- Sidebar -->
         @include('layouts.sidebar')
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col md:pl-64"> <!-- ▼▼▼ แก้ไขบรรทัดนี้ ▼▼▼ -->
-
-            <!-- Header -->
+        <div class="flex-1 flex flex-col md:pl-64">
             @if (isset($header))
                 <header class="bg-white shadow">
                     <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between items-center">
-
-                            <!-- Hamburger Menu for mobile -->
                             <div class="md:hidden">
                                 <button @click="sidebarOpen = !sidebarOpen"
                                     class="text-gray-500 hover:text-gray-600 focus:outline-none">
@@ -44,13 +38,9 @@
                                     </svg>
                                 </button>
                             </div>
-
-                            <!-- Header Title -->
                             <div class="flex-1 min-w-0 md:text-left text-center">
                                 {{ $header }}
                             </div>
-
-                            <!-- User Menu -->
                             <div class="flex items-center space-x-6">
                                 @if (auth()->user()->role == 'admin')
                                     <div>
@@ -88,16 +78,13 @@
                     </div>
                 </header>
             @endif
-
-            <!-- Page Content -->
             <main class="flex-grow">
                 {{ $slot }}
             </main>
-
         </div>
     </div>
-
     @livewireScripts
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @stack('scripts')
 </body>
 
